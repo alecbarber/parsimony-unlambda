@@ -13,13 +13,13 @@ def test_unlambda_execution(program, expected, direction = 'both'):
         print("Testing program " + program + " LTR ... ", end='')
         result = _unlambda_test_wrapper_ltr(program)
         this_passed = result == expected
-        print("PASSED" if this_passed else "FAILED")
+        print("PASSED" if this_passed else f"FAILED; expected {expected}, got {result}")
         passed = this_passed and passed
     if direction in ['both', 'rtl']:
         print("Testing program " + program + " RTL ... ", end='')
         result = _unlambda_test_wrapper_rtl(program)
         this_passed = result == expected
-        print("PASSED" if this_passed else "FAILED")
+        print("PASSED" if this_passed else "FAILED; expected {expected}, got {result}")
         passed = this_passed and passed
     
     return passed

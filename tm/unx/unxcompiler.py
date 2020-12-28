@@ -213,10 +213,9 @@ class UnxCompiler:
     """
     Convert a string in UNX format to UnLambda
     """
-    def compile(self, unx):
+    def compileParsed(self, unx):
         import networkx as nx
         # TODO: Implement file inclusion
-        # TODO: Implement <n> builtins
 
         self.function_trees = {}
         self.function_dependencies = {}
@@ -310,7 +309,12 @@ class UnxCompiler:
         print(f"Compiled {len(self.function_trees)} functions to {len(result)} symbols")
         return result
     
+    def compile(self, unx):
+        from . import UnxParser
+
+        return self.compileParsed(UnxParser().parseString(unx, parseAll=True).asDict())
+
     def compileFile(self, file):
         from . import UnxParser
 
-        return self.compile(UnxParser().parseFile(file, parseAll=True).asDict())
+        return self.compileParsed(UnxParser().parseFile(file, parseAll=True).asDict())

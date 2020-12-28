@@ -8,6 +8,8 @@ class SingleTapeTuringMachine(object):
 
         self.startState = machine.states[0]
 
+        self.alphabet = machine.alphabet
+
     def run(self, quiet=False, limited=False, stepSkip = 10000, printStates = [], numSteps=float("Inf"), output=None):
 
         state = self.startState
@@ -26,42 +28,44 @@ class SingleTapeTuringMachine(object):
                 stepCounter += 1
 
                 if state.stateName == "ERROR":
-                    print("Turing machine threw error!")
+                    print("Turing machine threw error!", file=output)
                     halted = True
                     break
 
                 if state.stateName == "ACCEPT":
-                    print("Turing machine accepted after", stepCounter, "steps.")
-                    print(tape.length(), "squares of memory were used.")
-                    print("Final state was")
+                    print("Turing machine accepted after", stepCounter, "steps.", file=output)
+                    print(tape.length(), "squares of memory were used.", file=output)
+                    print("Final state was", file=output)
                     self.printTape(state, -2, tape.length() + 2, output)
                     halted = True
                     break
 
                 if state.stateName == "REJECT":
-                    print("Turing machine rejected after", stepCounter, "steps.")
-                    print(tape.length(), "squares of memory were used.")
+                    print("Turing machine rejected after", stepCounter, "steps.", file=output)
+                    print(tape.length(), "squares of memory were used.", file=output)
                     halted = True
                     break
 
                 if state.stateName == "HALT":
-                    print("Turing machine halted after", stepCounter, "steps.")
-                    print(tape.length(), "squares of memory were used.")
+                    print("Turing machine halted after", stepCounter, "steps.", file=output)
+                    print(tape.length(), "squares of memory were used.", file=output)
                     halted = True
                     break
 
                 if state.stateName == "OUT":
-                    print("Turing machine execution incomplete: reached out state.")
-                    print("Perhaps this Turing machine wants to be melded with another machine.")
+                    print("Turing machine execution incomplete: reached out state.", file=output)
+                    print("Perhaps this Turing machine wants to be melded with another machine.", file=output)
 
                 state, write, headmove = state.transitionFunc(symbol)
                 symbol = tape.writeSymbolMoveAndRead(write, headmove)
             except Exception as e:
-                print(f"Exception while in state {state.stateName}; tape position is {tape.headLoc}")
+                print(f"Exception while in state {state.stateName}; tape position is {tape.headLoc}", file=output)
                 raise e
 
         if not halted:
-            print("Turing machine ran for", numSteps, "steps without halting.")
+            print("Turing machine ran for", numSteps, "steps without halting.", file=output)
+        
+        return halted
 
     def printTape(self, state, start, end, output):
         if output == None:
@@ -74,7 +78,10 @@ class SingleTapeTuringMachine(object):
             output.write(state.stateName + "\n")
 
             self.tape.printTape(start, end, output)
-#           output.write("--------------------------------------\n")
+#           output.write("--------------------------------------\n"
+
+    def getTapeState(self):
+        return self.tape.getRawTape().strip(self.alphabet[0])
 
 class Tape(object):
     # By convention the first symbol in the alphabet is the initial symbol
@@ -158,3 +165,6 @@ class Tape(object):
         headString = "".join(headString)
         tapeString = "".join(tapeString)
         return headString + "\n" + tapeString + "\n"
+    
+    def getRawTape(self):
+        return self.tapeNeg.decode('utf-8')[::-1] + self.tapePos.decode('utf-8')
