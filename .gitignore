@@ -1,0 +1,7 @@
+*/__pycache__/*
+*.pyc
+*.log
+*.aux
+*.DS_STORE
+*.class
+*.java

@@ -1,0 +1,7 @@
+012
+
+START:
+match R write L 01201 ACCEPT
+00 -> ERROR
+11 -> step L ERROR
+endmatch

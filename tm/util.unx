@@ -1,0 +1,10 @@
+include core.unx
+
+<acc> :: Int -> (Int -> Int -> Int) -> Int :: ^m^f^i^a ```<ifthenelse> ``<geq>$m$i ````<acc>$m$f`<inc>$i``$f$i$a $a
+
+<factorial> :: Int -> Int :: ^x````<acc>$x<mul><1><1>
+
+<1_if_false> :: Boolean -> Int -> Int :: ^b^x ```<ifthenelse> ^b $x <1>
+<skip_factorial> :: Int -> Int -> Int :: ^x^s ````<acc>$x`<skip_mul>$s<1><1>
+<skip_mul> :: Int -> Int -> Int -> Int :: ^s^x^y ``<mul> ``<1_if_false>``<eq>$s$x$x $y
+

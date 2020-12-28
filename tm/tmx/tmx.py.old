@@ -1,0 +1,335 @@
+from . state import State
+from collections import defaultdict as dd
+
+## Language features TODO
+# proper object-oriented parsing
+# write DIR STRING STATE
+# match -- direction (no move)
+# allow arbitrary nesting of single-line commands
+# identify + collapse identical single-line commands
+
+SYNTHETIC_STATE_COUNTER = 0
+
+class AbstractTmxState:
+    def __init__(self, name, alphabet, direction):
+        self.name = name
+        self.alphabet = alphabet
+        self.direction = direction
+    
+    def generateTmStates(self):
+        raise NotImplementedError
+
+    @staticmethod
+    def createSyntheticState(line, alphabet):
+        global SYNTHETIC_STATE_COUNTER
+        SYNTHETIC_STATE_COUNTER += 1
+        state_type = line.split()[0]
+        if state_type in COMMAND_DICTIONARY:
+            state, _ = COMMAND_DICTIONARY[state_type].parseState(f'synthetic_{SYNTHETIC_STATE_COUNTER}_{line.replace(' ', '_')}', [line], alphabet)
+            return state
+        else:
+            raise Exception(f"Unknown command '{state_type}'")
+
+    """
+    Returns a state and the unparsed lines
+    """
+    @staticmethod
+    def parseNextStates(lines, alphabet):
+        if not lines:
+            return [], []
+        if not lines[0] or lines[0][-1] != ':' or ' ' in lines[0]:
+            raise Exception(f"Illegal state name '{lines[0]}'")
+        next_name = lines[0][:-1]
+        lines = lines[1:]
+        if not lines:
+            raise Exception(f"State {next_name} is empty")
+        state_type = lines[1].split()[0]
+        if state_type in COMMAND_DICTIONARY:
+            return COMMAND_DICTIONARY[state_type].parseState(next_name, lines[1:], alphabet)
+        else:
+            raise Exception(f"Unknown command '{state_type}'")
+    
+    @staticmethod
+    def parseFirstParams(name, lines, alphabet):
+        words = lines[0].split()
+        return [name, alphabet, words[1]]
+
+class WindState(AbstractTmxState):
+    def __init__(self, name, alphabet, direction, stop):
+        super().__init__(name, alphabet, direction)
+        
+
+    @staticmethod
+    def parseState(name, lines, alphabet):
+        words = lines[0].split()
+        params = AbstractTmxState.parseFirstParams(name, lines, alphabet)
+        if 
+
+
+
+class Wind2State(WindState):
+    def __init__(self, name):
+        super().__init__(name)
+
+class FillState(AbstractTmxState):
+    def __init__(self, name):
+        super().__init__(name)
+
+class Fill2State(FillState):
+    def __init__(self, name):
+        super().__init__(name)
+
+class ShuffleState(AbstractTmxState):
+    def __init__(self, name):
+        super().__init__(name)
+
+class Shuffle2State(ShuffleState):
+    def __init__(self, name):
+        super().__init__(name)
+
+class MatchState(AbstractTmxState):
+    def __init__(self, name):
+        super().__init__(name)
+
+class WriteState(AbstractTmxState):
+    def __init__(self, name):
+        super().__init__(name)
+
+COMMAND_DICTIONARY = {
+    'wind': WindState, 'wind2': Wind2State,
+    'fill': FillState, 'fill2': Fill2State,
+    'shuffle': ShuffleState, 'shuffle2': Shuffle2State,
+    'match': MatchState, 'write': WriteState
+}
+
+
+def getOppositeDirection(direction):
+    return 'L' if direction == 'R' else 'R' if direction == 'L' else '-'
+
+def getWindState(name, alphabet, direction, match, following):
+    # For now, assume wind only has 1 character. Might change in future...
+    if len(match) > 1:
+        raise Exception("wind can only search for 1 character, but '" + match + "' has " + len(match) + " characters")
+    state = State(name, alphabet, direction)
+    state.setNextState(match, following)
+    return state
+
+def getFillState(name, alphabet, direction, match, fill, following):
+    # For now, only match and fill 1 character
+    if len(match) > 1:
+        raise Exception("fill can only search for 1 character, but '" + match + "' has " + len(match) + " characters")
+    if len(fill) > 1:
+        raise Exception("fill can only replace 1 character, but '" + fill + "' has " + len(fill) + " characters")
+    state = State(name, alphabet, direction)
+    for symb in alphabet:
+        state.setWrite(symb, fill)
+    state.setNextState(match, following)
+    return state
+    
+
+def getShuffleStates(name, alphabet, direction, match, following, base_state = None):
+    if not base_state:
+        base_state = alphabet[0]
+
+    # The base state is the 'blank' state
+    def getStateName(symb):
+        return name if symb == base_state else name + '_' + symb
+
+    # Similar to wind, assume a single stop character for shuffling
+    if len(match) > 1:
+        raise Exception("shuffle can only shuffle by a single character, but '" + match + "' has " + len(match) + " characters")
+    states = []
+    for symbol in alphabet:
+        state = State(getStateName(symbol), alphabet, direction)
+        for s2 in alphabet:
+            state.setWrite(s2, symbol)
+            state.setNextState(s2, getStateName(s2))
+        state.setNextState(match, following)
+        states.append(state)
+    return states
+
+def getMatchStates(name, alphabet, direction, matches, defaultstate = None):
+    # The base state is the 'nothing matched' state
+    def getStateName(prefix):
+        return name if not prefix else name + '_' + prefix
+
+    states = {}
+    if not matches:
+        states[''] = State(name, alphabet, direction, defaultstate if defaultstate else 'ERROR')
+    else:
+        states[''] = State(name, alphabet, direction, defaultstate)
+    
+    match_dict = dict((match[0], (match[1] == '-<', match[2][:-1] if match[2][-1] == ';' else match[0][-1], match[-1])) for match in matches)
+    prefixes = {s[:i] for s in match_dict for i in range(len(s))}
+
+    for prefix in prefixes:
+        if prefix:
+            states[prefix] = State(getStateName(prefix), alphabet, direction, defaultstate if defaultstate else states[''])
+
+    # Build match graph. Note that the behaviour is undefined for ambiguous match sets.
+    for prefix in prefixes:
+        for i in reversed(range(len(prefix) + 1)):
+            for s in alphabet:
+                possible_match = prefix[i:] + s
+                if possible_match in prefixes:
+                    states[prefix].setNextState(s, states[possible_match])
+                    states[prefix].setWrite(s, s)
+                elif possible_match in match_dict:
+                    reverse, overwrite, target = match_dict[possible_match]
+                    states[prefix].setNextState(s, target)
+                    states[prefix].setWrite(s, overwrite)
+                    if reverse:
+                        states[prefix].setHeadMove(s, getOppositeDirection(direction))
+    
+    return states
+
+
+
+"""
+Command behaviour:
+wind DIR MATCH ACTION : walk in direction DIR until MATCH is matched.
+wind2 DIR MATCH ACTION: same as wind, but when MATCH is matched, step in *opposite* direction and go to ACTION
+shuffle DIR MATCH ACTION : walk in direction DIR, shuffling symbols 1 place until MATCH is matched, then go to ACTION. The starting symbol is replaced by a blank.
+shuffle2 DIR MATCH ACTION : same as shuffle, but final step is in opposite direction
+match DIR : walk in direction DIR until a pattern is matched
+  KEY -> ACTION : when KEY is matched, go to ACTION
+  KEY -> CHAR; ACTION : when KEY is matched, overwrite with CHAR and go to ACTION
+  KEY -< ACTION : when KEY is matched, step in opposite direction and go to ACTION
+  KEY -< CHAR; ACTION : when KEY is matched, overwrite with CHAR, go to ACTION and step in opposite direction
+endmatch
+"""
+
+def buildRawTm(lines):
+
+    stripped_lines = [l.strip() for l in lines]
+    lines = [l for l in stripped_lines if l and l[:2] != '%%']
+    alphabet = lines[0]
+
+    lines = lines[1:]
+
+    synthetic_states = []
+
+    # Expand match commands
+    for i in range(len(lines)):
+        words = lines[i].split()
+        if len(words) > 2 and (words[1] == '->' or words[1] == '-<'):
+            first_copy = 3 if words[2][-1] == ';' else 2
+            if len(words) > first_copy:
+                command = words[first_copy:]
+                if len(command) > 1:
+                    synth_state_name = f'synthetic_{len(synthetic_states)}_' + '_'.join(command)
+                    lines[i] = ' '.join(words[:first_copy] + [synth_state_name])
+                    synthetic_states = synthetic_states + [synth_state_name + ':', ' '.join(command)]
+    
+    lines = lines + synthetic_states
+
+    states = []
+
+    while lines:
+        name = lines[0][:-1]
+        if ' ' in name or not name:
+            raise Exception("Illegal state name '" + name + "'")
+        lines = lines[1:]
+        if not lines:
+            raise Exception("State '" + name + "' has no body")
+        words = lines[0].split()
+        lines = lines[1:]
+        command = words[0]
+        if command == 'wind':
+            direction, match, following = words[1:]
+            state = getWindState(name, alphabet, direction, match, following)
+            states.append(state)
+        elif command == 'wind2':
+            direction, match, following = words[1:]
+            state = getWindState(name, alphabet, direction, match, following)
+            state.setHeadMove(match, getOppositeDirection(direction))
+            states.append(state)
+        elif command == 'shuffle':
+            if len(words) == 4:
+                direction, match, following = words[1:]
+                base_state = None
+            else:
+                direction, match, base_state, following = words[1:]
+            shuffle_states = getShuffleStates(name, alphabet, direction, match, following, base_state)
+            states = states + shuffle_states
+        elif command == 'shuffle2':
+            if len(words) == 4:
+                direction, match, following = words[1:]
+                base_state = None
+            else:
+                direction, match, base_state, following = words[1:]
+            shuffle_states = getShuffleStates(name, alphabet, direction, match, following, base_state)
+            for state in shuffle_states:
+                state.setHeadMove(match, getOppositeDirection(direction))
+            states = states + shuffle_states
+        elif command == 'fill':
+            direction, match, fill, following = words[1:]
+            fill_state = getFillState(name, alphabet, direction, match, fill, following)
+            states.append(fill_state)
+        elif command == 'fill2':
+            direction, match, fill, following = words[1:]
+            fill_state = getFillState(name, alphabet, direction, match, fill, following)
+            fill_state.setHeadMove(match, getOppositeDirection(direction))
+            states.append(fill_state)
+        elif command == 'match':
+            direction = words[1]
+            defaultstate = words[2] if len(words) > 2 else None
+            matches = []
+            while lines:
+                match = lines[0].split()
+                lines = lines[1:]
+                matches.append(match)
+                if match[0] == 'endmatch':
+                    break
+                if direction == 'L':
+                    match[0] = match[0][::-1]
+                if match[1] not in ['->', '-<']:
+                    raise Exception('Malformed match: ' + ' '.join(match))
+            if not matches or matches[-1][0] != 'endmatch':
+                raise Exception("Unbounded match block")
+            
+            # Drop endmatch
+            matches = matches[:-1]
+
+            match_states = getMatchStates(name, alphabet, direction, matches, defaultstate)
+            states = states + list(match_states.values())
+        else:
+            raise Exception("Unknown command '" + words[0] + "'")
+    for state in states:
+        if state.stateName == 'START':
+            state.isStartState = True
+    return states
+
+def buildTrueTm(states):
+    if not states:
+        return [State("REJECT", '_')], '_'
+    
+    alphabet = states[0].alphabet
+
+    state_dict = dict((state.stateName, state) for state in states)
+    state_dict.update({"ACCEPT": State("ACCEPT", alphabet),
+        "REJECT": State("REJECT", alphabet),
+        "ERROR": State("ERROR", alphabet),
+        "HALT": State("HALT", alphabet),
+        "OUT": State("OUT", alphabet)})
+    
+    for state in state_dict.values():
+        for symb in state.alphabet:
+            if not isinstance(state.getNextState(symb), State):
+                state.setNextState(symb, state_dict[state.getNextState(symb)])
+    
+    return sorted(state_dict.values(), key=lambda x: x.isStartState, reverse=True), alphabet
+
+def tmxToTm(tmxfile, tmfile):
+    with open(tmxfile) as infile:
+        tm = buildRawTm(infile.readlines())
+    if tm:
+        with open(tmfile, 'w') as outfile:
+            outfile.write(tm[0].alphabet + '\n\n')
+            for state in tm:
+                state.printState(outfile)
+                outfile.write('\n')
+
+def compileTmxFile(fname):
+    with open(fname) as infile:
+        return buildTrueTm(buildRawTm(infile.readlines()))

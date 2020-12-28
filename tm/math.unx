@@ -1,0 +1,17 @@
+%% <factorial> :: x -> factorial_(x,1,1)
+<factorial> :: Int -> Int :: ^x```<factorial_> $x <1> <1>
+
+%% <factorial_> :: x,i,a -> if (i <= x) factorial_(x,i+1,i*a) else a
+<factorial_> :: Int -> Int -> Int -> Int :: ^x^i^a ```<ifthenelse> ``<geq>$x$i ```<factorial_>$x`<inc>$i``<mul>$i$a $a
+
+%% <isprime> :: x -> 1 >= maxfactor(x)
+<isprime> :: Int -> Boolean :: ^x``<geq><1>`<maxfactor>$x
+
+%% <maxfactor> :: x -> maxfactor_(x, x-1)
+<maxfactor> :: Int -> Int :: ^x``<maxfactor_>$x`<dec>$x
+
+%% <maxfactor_> x,f -> if (isfactor(x,0,f)) f else maxfactor_(x,f-1)
+<maxfactor_> :: Int -> Int -> Int :: ^x^f ```<ifthenelse> ```<isfactor>$x<0>$f $x ``<maxfactor_>$x`<dec>$f
+
+%% <isfactor> x,f,a -> if (x < a) false else if (x <= a) true else isfactor(x, f, f + a)
+<isfactor> :: Int -> Int -> Int -> Boolean :: ^x^f^a ```<ifthenelse> ``<lt>$x$a <false> ```<ifthenelse> ``<leq>$x$a <true> ``<isfactor>$x$f`<add>$f$a

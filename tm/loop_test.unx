@@ -1,0 +1,10 @@
+<1> :: Int :: i
+<inc> :: Int -> Int :: `s``s`ksk
+
+<ifthenelse> :: Boolean -> Any -> Any :: i
+<return> :: Function :: i
+
+<leq> :: Int -> Int -> Boolean :: ``s``s`ks``s`kk``s``si`k``s`k`sik`k`ki`k``s``si`k``s`k`sik`k`k`ki
+
+<main> :: Function :: `<loop><1>
+<loop> :: Function :: ^x```<ifthenelse> ``<leq>$x<1> `<loop>`<inc>$x <return>

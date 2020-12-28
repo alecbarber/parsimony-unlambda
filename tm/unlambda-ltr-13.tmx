@@ -1,0 +1,193 @@
+_`^sSkKiI$[*!
+
+START:
+wind2 L $ remove_whitespace
+
+remove_whitespace:
+match R
+  _ -< *; wind L $ shuffle R * START
+  * -< wind2 L $ next_action
+endmatch
+
+next_action:
+match R
+  *    -> ACCEPT
+  `i   -< _; evaluate_i
+  ``k  -< evaluate_k_matchX
+  k[   -> evaluate_k_findY
+  ```s -< evaluate_s_matchX
+  s[   -> evaluate_s_X_matched
+endmatch
+
+%% Evaluating the identity is trivial - just remove it!
+
+evaluate_i:
+write L _ START
+
+%% Evaluate a ``k.
+%% Step 1: match expression X (``kXY -> `k[X*Y)
+%% Step 2: match expression Y (`k[X*Y -> `k[X[Y*)
+%% Step 3: remove expression Y and the mess around X
+
+evaluate_k_matchX:
+match L ERROR
+  `` -< ^; evaluate_k_matchX_write_k[
+endmatch
+
+evaluate_k_matchX_write_k[:
+match R ERROR
+  ` -> k; evaluate_k_matchX_write_k[
+  k -> [; match_expression
+endmatch
+
+%% Match and remove Y
+
+evaluate_k_findY:
+match R
+  * -> [; match_expression
+  [ -> _; evaluate_k_clean_up
+endmatch
+
+%% Wipe Y and the mess around X
+
+evaluate_k_clean_up:
+fill2 R * _ evaluate_k_return_to_head
+
+evaluate_k_return_to_head:
+match L
+  [ -> _; evaluate_k_clean_up_head
+endmatch
+
+evaluate_k_clean_up_head:
+match L ERROR
+  k -> _; evaluate_k_clean_up_head
+  ^ -> _; normalise_matched_expression
+endmatch
+
+%% Evaluate a ```s
+%% Step 1: match expression X; convert `^`sXYZ to `^s[X*YZ
+%% Step 2: match expression Y; convert `^s[X*YZ to `^s[X[Y*Z
+%% Step 3: match expression Z; convert `^s[X[Y*Z to `^s[X!Y[Z*
+%% Step 4: copy Z to X and Y, clean up
+
+evaluate_s_matchX:
+match L ERROR
+  `` -< ^; evaluate_s_matchX_write_s[
+endmatch
+
+evaluate_s_matchX_write_s[:
+match R ERROR
+  ` -> s; evaluate_s_matchX_write_s[
+  s -> [; match_expression
+endmatch
+
+evaluate_s_X_matched:
+match R
+  * -> [; match_expression
+  [ -> !; evaluate_s_Y_matched
+  ! -> evaluate_s_Y_matched
+endmatch
+
+evaluate_s_Y_matched:
+match R
+  * -> [; match_expression
+  [ -> copy L [ ! * step R evaluate_s_clean_up
+endmatch
+
+evaluate_s_clean_up:
+match L
+  * -> _; evaluate_s_clean_up
+  [ -> _; evaluate_s_clean_up2
+endmatch
+
+evaluate_s_clean_up2:
+match L
+  ! -> `; evaluate_s_clean_up2
+  [ -> _; evaluate_s_clean_up_head
+endmatch
+
+evaluate_s_clean_up_head:
+match L ERROR
+  s -> _; evaluate_s_clean_up_head
+  ^ -< `; normalise_matched_expression
+endmatch
+
+%% Convert an expression from `x to ^X form. Mark the end of the expression with a *
+
+match_expression:
+match R
+  ` -> match_expression_`
+  s -> match_expression_return_to_complete
+  k -> match_expression_return_to_complete
+  v -> match_expression_return_to_complete
+  i -> match_expression_return_to_complete
+  * -> ERROR
+endmatch
+
+match_expression_return_to_complete:
+match L
+  [ -< match_expression_complete
+  $ -> ERROR
+endmatch
+
+match_expression_`:
+match R
+  ` -> match_expression_`
+  s -> match_expression_`l
+  k -> match_expression_`l
+  i -> match_expression_`l
+  v -> match_expression_`l
+  * -> ERROR
+endmatch
+
+match_expression_`l:
+match R
+  ` -> match_expression_`
+  s -< S; match_expression_update_tick
+  k -< K; match_expression_update_tick
+  i -< I; match_expression_update_tick
+  v -< V; match_expression_update_tick
+  * -> ERROR
+endmatch
+
+match_expression_update_tick:
+match L
+  ` -> ^; match_expression_update_tick_return
+endmatch
+
+match_expression_update_tick_return:
+match L
+  [ -< match_expression
+endmatch
+
+match_expression_complete:
+match R
+  s -> match_expression_complete2
+  k -> match_expression_complete2
+  i -> match_expression_complete2
+  v -> match_expression_complete2
+  * -> ERROR
+endmatch
+
+%% Find the end of the matched expression. The end is marked by either a `skiv character, or a * (end of program)
+match_expression_complete2:
+match R
+  s -> step L shuffle2 R _ * START
+  k -> step L shuffle2 R _ * START
+  i -> step L shuffle2 R _ * START
+  v -> step L shuffle2 R _ * START
+  ` -> step L shuffle2 R _ * START
+  * -> step L shuffle2 R _ * START
+endmatch
+
+%% Normalise program which may contain a matched expression
+
+normalise_matched_expression:
+match R
+  ^ -> `; normalise_matched_expression
+  S -> s; normalise_matched_expression
+  K -> k; normalise_matched_expression
+  V -> v; normalise_matched_expression
+  I -> i; normalise_matched_expression
+  * -< START
+endmatch
