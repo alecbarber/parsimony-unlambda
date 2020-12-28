@@ -2,7 +2,8 @@ def run_unlambda(unl, quiet = False, step=False, direction = 'rtl'):
     def _identity(x):
         return x
 
-    print("Evaluating", unl)
+    if not quiet:
+        print("Evaluating", unl)
 
     if direction == 'rtl':
         evaluate = evaluate_unl_rtl
