@@ -3,26 +3,11 @@ from tm.tmx import TmxCompiler
 from tm.unx import UnxCompiler
 
 class TmCreator:
-    def __init__(self, intepreter_file):
+    def __init__(self, intepreter_file, expansion_map = { '_': '0000', '`': '1000', 'k': '1001', 's': '1010', 'i': '1011', '[': '1100', '^': '0100', 'K': '0101', 'S': '0110', 'I': '0111', '$': '0001', '*': '0010', '!': '0011' }):
         self.interpreter = intepreter_file
+        self.expansion_map = expansion_map
 
     def createTmForUnxFile(self, file):
-        EXPANSION_MAP = {
-            '_': '0000', 
-            '`': '1000', 
-            'k': '1001', 
-            's': '1010', 
-            'i': '1011', 
-            '[': '1100', 
-            '^': '0100', 
-            'K': '0101', 
-            'S': '0110', 
-            'I': '0111', 
-            '$': '0001', 
-            '*': '0010', 
-            '!': '0011'
-        }
-
         unl = UnxCompiler().compileFile(file)
         unl = '$' + unl + '*'
         interpreter = TmxCompiler().compileFile(self.interpreter)
@@ -38,4 +23,4 @@ class TmCreator:
         for state in interpreter.states:
             for sym in interpreter.alphabet:
                 state.setNextState(sym, state.getNextState(sym).stateName)
-        return TmOptimiser().optimise(TmExpander().expand(Machine.createFromRawStates(interpreter.alphabet, printer_states + interpreter.states), mapping=EXPANSION_MAP))
+        return TmOptimiser().optimise(TmExpander().expand(Machine.createFromRawStates(interpreter.alphabet, printer_states + interpreter.states), mapping=self.expansion_map))
