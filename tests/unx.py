@@ -27,7 +27,7 @@ class TuringMachineBackend:
         print("PASSED")
         return True
 
-def run_tests(backend, full=True):
+def run_core_tests(backend, full=True):
     def create_program(main_func, core_library):
         return core_library + '\n' + '[main] :: ' + main_func + '\n'
 
@@ -75,7 +75,6 @@ def run_tests(backend, full=True):
         ('``<geq><1><0>', 'k', False),
         ('``<geq><3><6>', '`ki', True),
         ('``<geq><7><2>', 'k', True),
-        # TODO: Test arithmetic functions
     ]
 
     for program, result, full_only in PROGRAMS:
@@ -85,4 +84,30 @@ def run_tests(backend, full=True):
         unl = compiler.compile(create_program(program, core_prog))
         if not backend.test(unl, result):
             return False
+
     return True
+
+def run_math_tests(backend):
+    def create_program(main_func, core_library):
+        return core_library + '\n' + '[main] :: ' + main_func + '\n'
+
+    with open('tm/math.unx') as infile:
+        core_prog = infile.read()
+    
+    compiler = UnxCompiler()
+
+    return True
+
+def run_program_tests(backend):
+    compiler = UnxCompiler()
+
+    print("Running loop test ...")
+    unl = compiler.compileFile('tm/loop_test.unx')
+    if not backend.test(unl, 'i'):
+        return False
+
+    print("Testing squares are small ...")
+    unl = compiler.compileFile('tm/squaresaresmall.unx')
+    if not backend.test(unl, 'i'):
+        return False
+

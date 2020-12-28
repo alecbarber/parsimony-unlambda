@@ -1,33 +1,4 @@
-<false> :: Boolean :: `ki
-<true> :: Boolean :: k
-
-<ifthenelse> :: Boolean -> Any -> Any :: i
-<and> :: Boolean -> Boolean -> Boolean :: ^b^c```<ifthenelse>$b$c<false> %% ``ss`k`k`ki
-<or> :: Boolean -> Boolean -> Boolean :: ^b^c```<ifthenelse>$b<true>$c %% ``s`k`s``si`kkk
-<not> :: Boolean -> Boolean :: ^b```<ifthenelse>$b<false><true> %% ``s``si`k`ki`kk
-
-<flip> :: Function -> Function -> Function :: ^f^g`$g$f
-
-<test> :: Int -> Boolean :: ^n``$n`k<true><false>
-
-<leq> :: Int -> Int -> Boolean :: ^m^n```$m<flip>`k<true>``$n<flip>`k<false>
-<lt> :: Int -> Int -> Boolean  :: ^m^n``<leq>`<inc>$m$n
-<eq> :: Int -> Int -> Boolean  :: ^m^n``<and>``<leq>$m$n``<leq>$n$m
-<geq> :: Int -> Int -> Boolean :: ^m^n``<leq>$n$m
-<gt> :: Int -> Int -> Boolean  :: ^m^n``<leq>$n$m
-
-<0> :: Int :: `ki
-%% <n> is builtin
-
-<inc> :: Int -> Int :: `s``s`ksk
-<add> :: Int -> Int -> Int :: ``si`k`s``s`ksk
-<mul> :: Int -> Int -> Int :: ``s`ksk
-<pow> :: Int -> Int -> Int :: i
-<dec> :: Int -> Int :: ``s``si`k``s``s``s``si`ki`k`ki`k`ki`s``s`ksk`k`k`kk
-
-<halt> :: Function :: i
-
-<Y> :: Function -> Function :: ``s`k``sii``s``s`ksk`k``sii
+include core.unx
 
 [main] :: Function :: `[squaresaresmall]<0>
 

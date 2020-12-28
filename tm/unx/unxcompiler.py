@@ -208,6 +208,28 @@ class FunctionNode:
 
         return root_node
 
+class UnxFileLoader:
+    def __init__(self):
+        self.files = {}
+
+    def loadFile(self, file):
+        from . import UnxParser
+        from pathlib import Path
+
+        path = Path(file).resolve()
+        # Break infinite loops
+        if str(path) in self.files:
+            return {'definitions': [x for parsed in self.files.values() for x in parsed['definitions']]}
+        
+        parsed = UnxParser().parseFile(path, parseAll=True).asDict()
+        self.files[str(path)] = parsed
+
+        if 'includes' in parsed:
+            for include in parsed['includes']:
+                self.loadFile(str(path.parent / include))
+        
+        return {'definitions': [x for parsed in self.files.values() for x in parsed['definitions']]}
+
 class UnxCompiler:
 
     """
@@ -309,6 +331,7 @@ class UnxCompiler:
         print(f"Compiled {len(self.function_trees)} functions to {len(result)} symbols")
         return result
     
+    """ Note that this ignores any includes! """
     def compile(self, unx):
         from . import UnxParser
 
@@ -317,4 +340,4 @@ class UnxCompiler:
     def compileFile(self, file):
         from . import UnxParser
 
-        return self.compileParsed(UnxParser().parseFile(file, parseAll=True).asDict())
+        return self.compileParsed(UnxFileLoader().loadFile(file))
