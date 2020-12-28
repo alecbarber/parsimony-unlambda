@@ -29,11 +29,7 @@
 
 <Y> :: Function -> Function :: ``s`k``sii``s``s`ksk`k``sii
 
-%% [main] :: Function :: `[squaresaresmall]<0>
-
-[main] :: Function :: `<simple_loop><true>
-
-<simple_loop> :: Boolean -> Function :: ^x ```<ifthenelse> $x `<simple_loop><false> <halt>
+[main] :: Function :: `[squaresaresmall]<0>
 
 [squaresaresmall] :: Int -> Function :: ^x ```<ifthenelse> ``<leq><5>`<square>$x <halt> `[squaresaresmall]`<inc>$x
 
