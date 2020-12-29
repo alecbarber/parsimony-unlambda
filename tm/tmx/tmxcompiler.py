@@ -8,12 +8,14 @@ class CompileException(Exception):
 
 class TmxCompiler:
 
-    def __init__(self):
+    def __init__(self, preprocessor = None):
         self.parser = TmxParser()
+        self.preprocessor = preprocessor
     
-    def compile(self, tmx):
-        parser_result = self.parser.parseString(tmx, parseAll=True).asDict()
-
+    def compileParsed(self, parser_result):
+        if self.preprocessor:
+            parser_result = self.preprocessor.process(parser_result)
+        
         self.synthetic_state_count = 0
         self.alphabet = ''.join(parser_result['alphabet'])
         
@@ -35,10 +37,13 @@ class TmxCompiler:
 
         return Machine.createFromRawStates(self.alphabet, sorted(self.states.values(), key=lambda x: x.stateName == 'START', reverse=True))
     
-    def compileFile(self, tmxfile):
+    def compile(self, tmx):
+        parser_result = self.parser.parseString(tmx, parseAll=True).asDict()
+        return self.compileParsed(parser_result)
 
-        with open(tmxfile, 'r') as infile:
-            return self.compile(infile.read())
+    def compileFile(self, tmxfile):
+        parser_result = self.parser.parseFile(tmxfile, parseAll=True).asDict()
+        return self.compileParsed(parser_result)
     
     """
     def compileToExecutable(self, tmx):

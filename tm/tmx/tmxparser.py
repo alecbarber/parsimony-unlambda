@@ -7,14 +7,14 @@ def TmxParser():
 
     # Build grammar
     KEYWORDS_3ARG = 'step'
-    KEYWORDS_4ARG_WORD = 'write write2'
+    KEYWORDS_4ARG_WRITE = 'write write2'
     KEYWORDS_4ARG = 'wind wind2'
     KEYWORDS_45ARG = 'shuffle shuffle2'
     KEYWORDS_5ARG = 'fill fill2'
     KEYWORDS_6ARG = 'copy'
     KEYWORD_MATCH = 'match'
     KEYWORD_ENDMATCH = 'endmatch'
-    KEYWORDS = map(pp.Keyword, (' '.join([KEYWORDS_4ARG, KEYWORDS_4ARG_WORD, KEYWORDS_45ARG, KEYWORDS_5ARG, KEYWORD_MATCH, KEYWORD_ENDMATCH])).split())
+    KEYWORDS = map(pp.Keyword, (' '.join([KEYWORDS_4ARG, KEYWORDS_4ARG_WRITE, KEYWORDS_45ARG, KEYWORDS_5ARG, KEYWORD_MATCH, KEYWORD_ENDMATCH])).split())
     
     RESERVED_STATES = map(pp.Keyword, 'ACCEPT ERROR HALT REJECT OUT'.split())
 
@@ -49,7 +49,7 @@ def TmxParser():
     single_line_command_keyword_4 = MatchKeywords(KEYWORDS_4ARG.split())
 
     # 4-argument single line commands which accept a WORD as 3rd arg
-    single_line_command_keyword_4_word = MatchKeywords(KEYWORDS_4ARG_WORD.split())
+    single_line_command_keyword_4_write = MatchKeywords(KEYWORDS_4ARG_WRITE.split())
 
     single_line_command_keyword_45 = MatchKeywords(KEYWORDS_45ARG.split())
 
@@ -65,7 +65,7 @@ def TmxParser():
     single_line_expr = pp.Group ((
         (single_line_command_keyword_3 + direction_character) |
         (single_line_command_keyword_4 + direction_character + language_character.setResultsName("stop")) | 
-        (single_line_command_keyword_4_word + direction_character + language_word.setResultsName("write") + whitespace) |
+        (single_line_command_keyword_4_write + direction_character + language_word.setResultsName("write") + whitespace) |
         (single_line_command_keyword_45 + direction_character + language_character.setResultsName("stop") + whitespace
             + pp.Optional(language_character.setResultsName("write") + whitespace)) |
         (single_line_command_keyword_5 + direction_character + language_character.setResultsName("stop") + whitespace

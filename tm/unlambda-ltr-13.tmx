@@ -119,7 +119,6 @@ match R
   ` -> match_expression_`
   s -> match_expression_return_to_complete
   k -> match_expression_return_to_complete
-  v -> match_expression_return_to_complete
   i -> match_expression_return_to_complete
   * -> ERROR
 endmatch
@@ -136,7 +135,6 @@ match R
   s -> match_expression_`l
   k -> match_expression_`l
   i -> match_expression_`l
-  v -> match_expression_`l
   * -> ERROR
 endmatch
 
@@ -146,7 +144,6 @@ match R
   s -< S; match_expression_update_tick
   k -< K; match_expression_update_tick
   i -< I; match_expression_update_tick
-  v -< V; match_expression_update_tick
   * -> ERROR
 endmatch
 
@@ -165,7 +162,6 @@ match R
   s -> match_expression_complete2
   k -> match_expression_complete2
   i -> match_expression_complete2
-  v -> match_expression_complete2
   * -> ERROR
 endmatch
 
@@ -175,7 +171,6 @@ match R
   s -> step L shuffle2 R _ * START
   k -> step L shuffle2 R _ * START
   i -> step L shuffle2 R _ * START
-  v -> step L shuffle2 R _ * START
   ` -> step L shuffle2 R _ * START
   * -> step L shuffle2 R _ * START
 endmatch
@@ -187,7 +182,6 @@ match R
   ^ -> `; normalise_matched_expression
   S -> s; normalise_matched_expression
   K -> k; normalise_matched_expression
-  V -> v; normalise_matched_expression
   I -> i; normalise_matched_expression
   * -< START
 endmatch
