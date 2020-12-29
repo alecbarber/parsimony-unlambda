@@ -1,0 +1,6 @@
+include core.unx math.unx
+
+[main] :: Function :: ```[goldbach]<4><2><2>
+
+%% [goldbach] :: x,p,q -> if (p > q) return else if (isprime(p) && isprime(q)) goldbach(x+2, 2, x) else goldbach(x, p+1, q-1)
+[goldbach] :: Int -> Int -> Int -> Function :: ^x^p^q ```<ifthenelse> ``<gt>$p$q <halt> ```<ifthenelse> ``<and>`<isprime>$p`<isprime>$q ```[goldbach]`<inc>`<inc>$x<2>$x ```[goldbach]$x`<inc>$p`<dec>$q
