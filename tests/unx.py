@@ -87,15 +87,23 @@ def run_core_tests(backend, full=True):
 
     return True
 
-def run_math_tests(backend):
-    def create_program(main_func, core_library):
-        return core_library + '\n' + '[main] :: ' + main_func + '\n'
-
-    with open('tm/math.unx') as infile:
-        core_prog = infile.read()
-    
+def run_math_tests(backend):    
     compiler = UnxCompiler()
 
+    PROGRAMS = [('tests/unx_tests/' + filename, result) for filename, result in [
+        ('factorial-test-false.unx', '`ki'),
+        ('factorial-test-true.unx', 'k'),
+        ('prime-4.unx', '`ki'),
+        ('prime-5.unx', 'k'),
+        ('prime-6.unx', '`ki'),
+    ]]
+
+    for program, result in PROGRAMS:
+        print(f"Testing program {program} ...")
+        unl = compiler.compileFile(program)
+        if not backend.test(unl, result):
+            return False
+    
     return True
 
 def run_program_tests(backend):

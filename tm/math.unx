@@ -9,11 +9,15 @@ include core.unx
 %% <isprime> :: x -> 1 >= maxfactor(x)
 <isprime> :: Int -> Boolean :: ^x``<geq><1>`<maxfactor>$x
 
-%% <maxfactor> :: x -> maxfactor_(x, x-1)
-<maxfactor> :: Int -> Int :: ^x``<maxfactor_>$x`<dec>$x
+%% <maxfactor> :: x -> maxfactor_(x-1, x)
+<maxfactor> :: Int -> Int :: ^x``<maxfactor_>`<dec>$x$x
 
-%% <maxfactor_> x,f -> if (isfactor(x,0,f)) f else maxfactor_(x,f-1)
-<maxfactor_> :: Int -> Int -> Int :: ^x^f ```<ifthenelse> ```<isfactor>$x<0>$f $x ``<maxfactor_>$x`<dec>$f
+%% <maxfactor_> f, x -> if (isfactor(f,x)) f else maxfactor_(f-1,x)
+<maxfactor_> :: Int -> Int -> Int :: ^f^x ```<ifthenelse> ``<isfactor>$f$x $f ``<maxfactor_>`<dec>$f$x
 
-%% <isfactor> x,f,a -> if (x < a) false else if (x <= a) true else isfactor(x, f, f + a)
-<isfactor> :: Int -> Int -> Int -> Boolean :: ^x^f^a ```<ifthenelse> ``<lt>$x$a <false> ```<ifthenelse> ``<leq>$x$a <true> ``<isfactor>$x$f`<add>$f$a
+%% <isfactor> f,x -> isfactor_(f,x,0)
+<isfactor> :: Int -> Int -> Boolean :: ^f^x ```<isfactor_>$f$x<0>
+
+%% <isfactor_> f,x,a -> if (x < a) false else if (x <= a) true else isfactor_(f, x, f + a)
+<isfactor_> :: Int -> Int -> Int -> Boolean :: ^f^x^a ```<ifthenelse> ``<lt>$x$a <false> ```<ifthenelse> ``<leq>$x$a <true> ```<isfactor_>$f$x``<add>$f$a
+

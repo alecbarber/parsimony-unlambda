@@ -1,0 +1,3 @@
+include ../../tm/math.unx
+
+[main] :: `<isprime><4>

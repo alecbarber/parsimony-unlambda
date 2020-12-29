@@ -26,7 +26,7 @@ def UnxParser():
     FUNCTION_DEFINITION_SEPARATOR = '::'
 
     INCLUDE_KEYWORD = 'include'
-    INCLUDE_FILE_CHARS = pp.alphanums + '_.'
+    INCLUDE_FILE_CHARS = pp.alphanums + '_./'
 
     pp.ParserElement.setDefaultWhitespaceChars(WHITESPACE)
 
@@ -51,7 +51,7 @@ def UnxParser():
     function = pp.Group((pure_function.setResultsName('name') | impure_function.setResultsName('name')) + pp.Optional(function_sep + function_signature) + function_sep + function_body).setResultsName('function')
 
     # Includes
-    include_file = pp.Word(INCLUDE_FILE_CHARS, asKeyword=True)
+    include_file = pp.Word(INCLUDE_FILE_CHARS)
     include_statement = (pp.Keyword(INCLUDE_KEYWORD).suppress() + pp.OneOrMore(include_file)).setResultsName('includes')
 
     parser = pp.Optional(pp.Optional(include_statement) + newlines) + (pp.Group(function) + pp.ZeroOrMore(pp.Group(newlines + function))).setResultsName('definitions') + pp.Optional(newlines)
