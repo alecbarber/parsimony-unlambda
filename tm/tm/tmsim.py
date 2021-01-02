@@ -58,6 +58,7 @@ class SingleTapeTuringMachine(object):
 
                 state, write, headmove = state.transitionFunc(symbol)
                 symbol = tape.writeSymbolMoveAndRead(write, headmove)
+                self.startState = state
             except Exception as e:
                 print(f"Exception while in state {state.stateName}; tape position is {tape.headLoc}", file=output)
                 raise e
